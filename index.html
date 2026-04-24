@@ -269,7 +269,7 @@ function allPairs() {
 function startGame(cat) {
   activeCat = cat;
   const pool = cat === "全部混合" ? allPairs() : DATA[cat];
-  pairs = shuffle(pool).slice(0, 10);
+  pairs = shuffle(pool);
   matched = 0; errors = 0;
   selClue = null; selAns = null;
   render();
