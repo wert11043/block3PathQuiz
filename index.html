@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>血液腫瘤配合題</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --correct: #16a34a;
+      --wrong: #dc2626;
+      --selected: #7c3aed;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 1rem 1rem 3rem;
+    }
+    header {
+      text-align: center;
+      padding: 1.25rem 0 .75rem;
+    }
+    header h1 { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
+    header p { font-size: .85rem; color: var(--muted); margin-top: .2rem; }
+
+    .categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      justify-content: center;
+      margin: .75rem 0 1rem;
+    }
+    .cat-btn {
+      padding: .4rem .9rem;
+      border: 2px solid var(--border);
+      border-radius: 999px;
+      background: var(--card);
+      cursor: pointer;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--muted);
+      transition: all .15s;
+    }
+    .cat-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .cat-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .status {
+      text-align: center;
+      font-size: .82rem;
+      color: var(--muted);
+      margin-bottom: .75rem;
+    }
+    .status b { color: var(--text); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .6rem;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .col-label {
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: .3rem;
+    }
+    .col { display: flex; flex-direction: column; gap: .45rem; }
+
+    .tile {
+      padding: .65rem .9rem;
+      border: 2px solid var(--border);
+      border-radius: .6rem;
+      background: var(--card);
+      cursor: pointer;
+      font-size: .82rem;
+      line-height: 1.45;
+      transition: border-color .12s, background .12s, opacity .12s;
+      user-select: none;
+      min-height: 2.6rem;
+    }
+    .tile:hover:not(.matched):not(.flashing) {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+    .tile.selected {
+      border-color: var(--selected);
+      background: #f5f3ff;
+    }
+    .tile.matched {
+      border-color: var(--correct);
+      background: #f0fdf4;
+      color: var(--correct);
+      cursor: default;
+      opacity: .75;
+    }
+    .tile.flashing {
+      border-color: var(--wrong);
+      background: #fef2f2;
+      animation: shake .35s ease;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .result {
+      display: none;
+      text-align: center;
+      max-width: 420px;
+      margin: 1.5rem auto 0;
+      padding: 1.75rem 1.5rem;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 1.25rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,.07);
+    }
+    .result.show { display: block; }
+    .result .big { font-size: 3.5rem; font-weight: 900; line-height: 1; }
+    .result .big.perfect { color: var(--correct); }
+    .result .big.good { color: #d97706; }
+    .result .big.bad { color: var(--wrong); }
+    .result p { color: var(--muted); margin: .6rem 0 1.25rem; font-size: .9rem; }
+    .result button {
+      padding: .65rem 1.5rem;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: .6rem;
+      cursor: pointer;
+      font-size: .95rem;
+      font-weight: 700;
+      transition: background .15s;
+    }
+    .result button:hover { background: #1d4ed8; }
+
+    @media (max-width: 560px) {
+      .grid { grid-template-columns: 1fr; }
+      .tile { font-size: .79rem; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>血液腫瘤配合題</h1>
+  <p>Hematopathology Matching Quiz — 點選左欄特徵，再點右欄疾病配對</p>
+</header>
+
+<div class="categories" id="cats"></div>
+
+<div class="status">
+  進度 <b id="prog">0 / 0</b> &nbsp;｜&nbsp; 錯誤 <b id="errs">0</b>
+</div>
+
+<div class="grid">
+  <div>
+    <div class="col-label">特徵 / 線索</div>
+    <div class="col" id="clueCol"></div>
+  </div>
+  <div>
+    <div class="col-label">疾病名稱</div>
+    <div class="col" id="ansCol"></div>
+  </div>
+</div>
+
+<div class="result" id="result">
+  <div class="big" id="bigScore"></div>
+  <p id="resultMsg"></p>
+  <button id="replayBtn">再試一次</button>
+</div>
+
+<script>
+const DATA = {
+  "IHC / Marker": [
+    { c: "CD5＋ / CD23＋ / CD20＋", a: "CLL / SLL" },
+    { c: "CD5＋ / CD23－ / Cyclin D1＋ / CD20＋", a: "Mantle Cell Lymphoma" },
+    { c: "CD10＋ / BCL2＋ / CD20＋（Nodular pattern）", a: "Follicular Lymphoma" },
+    { c: "CD20＋ / CD10＋ / BCL2－ / Ki-67 ≈100%", a: "Burkitt Lymphoma" },
+    { c: "CD20＋（成人最常見 B-cell lymphoma，Diffuse large）", a: "DLBCL" },
+    { c: "CD30＋ / CD20－ / PAX5 弱陽性（RS cell）", a: "Classical Hodgkin Lymphoma" },
+    { c: "CD138＋ / Light chain restriction（κ 或 λ）", a: "Multiple Myeloma" },
+    { c: "CD3＋ / TdT－（排除法診斷）", a: "PTCL, NOS" },
+    { c: "CD30＋ / ALK＋ / T-cell marker 少", a: "ALCL（ALK＋）" },
+    { c: "CD30＋ / ALK－ / T-cell marker 少", a: "ALCL（ALK－）" },
+    { c: "CD4＋ / PD1＋ / CD10＋（follicular helper T cell）", a: "AITL" },
+    { c: "CD4＋ / HTLV-1＋（關鍵）", a: "ATLL" },
+    { c: "CD4＋ / HTLV-1－（epidermotropism，cerebriform cell）", a: "MF / SS" },
+    { c: "CD3＋ / CD56＋ / EBV＋（必要條件）", a: "NK/T Lymphoma, nasal" },
+    { c: "TdT＋ / CD19＋（小孩，血液／骨髓）", a: "B-ALL" },
+    { c: "TdT＋ / CD3＋（青少年，mediastinal mass）", a: "T-ALL / LBL" },
+    { c: "MPO＋ / Auer rod（成人）", a: "AML" },
+    { c: "CD1a＋ / Langerin＋ / nuclear grooves", a: "LCH" },
+    { c: "CD20＋ / BRAF V600E（hairy cells, spleen red pulp）", a: "Hairy Cell Leukemia" },
+  ],
+  "染色體 / 基因異常": [
+    { c: "t(11;14) → Cyclin D1 overexpression", a: "Mantle Cell Lymphoma" },
+    { c: "t(14;18) → BCL2 overexpression", a: "Follicular Lymphoma" },
+    { c: "t(8;14) → MYC overexpression", a: "Burkitt Lymphoma" },
+    { c: "t(15;17) → PML-RARα（APL, M3, ATRA 治療）", a: "AML（M3/APL）" },
+    { c: "t(9;22) BCR-ABL1（Ph chromosome，預後差）", a: "B-ALL（Ph＋型）" },
+    { c: "t(12;21) ETV6-RUNX1（小兒最常見，預後好）", a: "B-ALL（ETV6型）" },
+    { c: "ALK translocation（NPM 最常見 partner）", a: "ALCL（ALK＋）" },
+    { c: "BRAF V600E（Birbeck granules，CD1a＋，兒童骨骼）", a: "LCH" },
+    { c: "BRAF V600E（B cell neoplasm，脾臟 red pulp）", a: "Hairy Cell Leukemia" },
+    { c: "HTLV-1 retrovirus 慢性感染", a: "ATLL" },
+    { c: "EBV（存在 B cell 內，多免疫細胞背景）", a: "AITL" },
+    { c: "EBV 感染 NK cell（診斷必要條件）", a: "NK/T Lymphoma, nasal" },
+    { c: "H. pylori 相關（根除可治癒）", a: "Gastric MALT Lymphoma" },
+  ],
+  "細胞形態 / 組織學": [
+    { c: "Reed-Sternberg cell（owl's eye，雙核，50–100 µm）", a: "Classical Hodgkin Lymphoma" },
+    { c: "Cerebriform cell（核呈腦迴皺褶狀）", a: "MF / SS" },
+    { c: "Flower cell / Cloverleaf cell（核葉化）", a: "ATLL" },
+    { c: "Auer rod（azurophilic granule 異常融合結晶）", a: "AML" },
+    { c: "Starry sky pattern（tingible-body macrophage）＋ Ki-67 ≈100%", a: "Burkitt Lymphoma" },
+    { c: "Nuclear grooves（咖啡豆核）＋ abundant cytoplasm", a: "LCH" },
+    { c: "Hairy cells（毛狀突起）＋ spleen red pulp 充滿", a: "Hairy Cell Leukemia" },
+    { c: "Hallmark cell（超大）＋ kidney / horseshoe-shaped nucleus", a: "ALCL（ALK＋）" },
+    { c: "Eccentric nucleus ＋ clock-face chromatin ＋ perinuclear hof", a: "Multiple Myeloma" },
+    { c: "Nodular pattern ＋ small cleaved cells ＋ BCL2＋", a: "Follicular Lymphoma" },
+    { c: "Diffuse small cells ＋ pseudofollicle（prolymphocyte 聚集）", a: "CLL / SLL" },
+    { c: "Fine chromatin ＋ TdT＋ ＋ high N/C ratio（immature blast）", a: "ALL（B-ALL / T-ALL）" },
+    { c: "壞死潰爛腫塊，侵入血管（nasal）", a: "NK/T Lymphoma, nasal" },
+    { c: "大量發炎背景（plasma cell、eosinophil）＋ 稀少 RS cell", a: "Classical Hodgkin Lymphoma" },
+  ],
+  "臨床 / 位置": [
+    { c: "小孩最常見血液腫瘤（CNS ＋ Testis 侵犯）", a: "B-ALL" },
+    { c: "青少年 ＋ anterior mediastinal mass（thymic）", a: "T-ALL / LBL" },
+    { c: "老年 ＋ 多發 lytic bone lesion ＋ renal failure ＋ M protein（CRAB）", a: "Multiple Myeloma" },
+    { c: "成人最常見 Non-Hodgkin lymphoma（任何器官）", a: "DLBCL" },
+    { c: "台灣最常見 Peripheral T/NK lymphoma（鼻腔，壞死）", a: "NK/T Lymphoma, nasal" },
+    { c: "Southern Japan / West Africa / Caribbean，HTLV-1＋", a: "ATLL" },
+    { c: "非洲小兒 jaw tumor（EBV ≈100%，endemic type）", a: "Burkitt Lymphoma" },
+    { c: "胃部，H. pylori 根除即可治癒（indolent）", a: "Gastric MALT Lymphoma" },
+    { c: "Skin patch → plaque → tumor（epidermotropism）", a: "MF / SS" },
+    { c: "Orderly spread from neck，Nodular sclerosis type 最常見", a: "Classical Hodgkin Lymphoma" },
+    { c: "GI tract 高比例侵犯，CD5＋ CD23－，moderately aggressive", a: "Mantle Cell Lymphoma" },
+    { c: "成人（median 65y），Auer rod，gingival swelling possible", a: "AML" },
+    { c: "兒童 ＋ skull lytic lesion ＋ CD1a＋ ＋ coffee-bean nucleus", a: "LCH" },
+    { c: "淋巴結，外觀極像 reactive hyperplasia，第二多 Peripheral T-cell", a: "AITL" },
+    { c: "Spleen red pulp，hairy cells，BRAF V600E", a: "Hairy Cell Leukemia" },
+  ],
+};
+
+// ─── state ───────────────────────────────────────────────
+let pairs = [], matched = 0, errors = 0;
+let selClue = null, selAns = null;
+let activeCat = "全部混合";
+
+// ─── helpers ─────────────────────────────────────────────
+function shuffle(a) { return [...a].sort(() => Math.random() - .5); }
+
+function allPairs() {
+  return Object.values(DATA).flat();
+}
+
+function startGame(cat) {
+  activeCat = cat;
+  const pool = cat === "全部混合" ? allPairs() : DATA[cat];
+  pairs = shuffle(pool).slice(0, 10);
+  matched = 0; errors = 0;
+  selClue = null; selAns = null;
+  render();
+  updateStatus();
+  document.getElementById("result").classList.remove("show");
+}
+
+function render() {
+  const shuffledClues = shuffle(pairs.map((p, i) => ({ txt: p.c, id: i })));
+  const shuffledAns   = shuffle(pairs.map((p, i) => ({ txt: p.a, id: i })));
+
+  const cc = document.getElementById("clueCol");
+  const ac = document.getElementById("ansCol");
+  cc.innerHTML = ""; ac.innerHTML = "";
+
+  shuffledClues.forEach(({ txt, id }) => {
+    cc.appendChild(makeTile(txt, id, "clue"));
+  });
+  shuffledAns.forEach(({ txt, id }) => {
+    ac.appendChild(makeTile(txt, id, "ans"));
+  });
+}
+
+function makeTile(txt, id, type) {
+  const el = document.createElement("div");
+  el.className = "tile";
+  el.textContent = txt;
+  el.dataset.id = id;
+  el.dataset.type = type;
+  el.addEventListener("click", () => onTile(el));
+  return el;
+}
+
+function onTile(el) {
+  if (el.classList.contains("matched") || el.classList.contains("flashing")) return;
+  const type = el.dataset.type;
+
+  if (type === "clue") {
+    document.querySelectorAll(".tile[data-type=clue].selected").forEach(e => e.classList.remove("selected"));
+    el.classList.add("selected");
+    selClue = el;
+  } else {
+    document.querySelectorAll(".tile[data-type=ans].selected").forEach(e => e.classList.remove("selected"));
+    el.classList.add("selected");
+    selAns = el;
+  }
+
+  if (selClue && selAns) tryMatch();
+}
+
+function tryMatch() {
+  const clueEl = selClue, ansEl = selAns;
+  selClue = null; selAns = null;
+
+  if (clueEl.dataset.id === ansEl.dataset.id) {
+    clueEl.classList.remove("selected"); clueEl.classList.add("matched");
+    ansEl.classList.remove("selected");  ansEl.classList.add("matched");
+    matched++;
+    updateStatus();
+    if (matched === pairs.length) setTimeout(showResult, 320);
+  } else {
+    errors++;
+    clueEl.classList.remove("selected"); clueEl.classList.add("flashing");
+    ansEl.classList.remove("selected");  ansEl.classList.add("flashing");
+    setTimeout(() => {
+      clueEl.classList.remove("flashing");
+      ansEl.classList.remove("flashing");
+    }, 400);
+    updateStatus();
+  }
+}
+
+function updateStatus() {
+  document.getElementById("prog").textContent = matched + " / " + pairs.length;
+  document.getElementById("errs").textContent = errors;
+}
+
+function showResult() {
+  const total = pairs.length;
+  const pct = Math.round(total / (total + errors) * 100);
+  const big = document.getElementById("bigScore");
+  big.textContent = pct + "%";
+  big.className = "big " + (pct === 100 ? "perfect" : pct >= 70 ? "good" : "bad");
+  document.getElementById("resultMsg").textContent =
+    errors === 0 ? "完美！全部正確，繼續保持！" :
+    pct >= 70   ? `答對 ${total} 題，失誤 ${errors} 次，再加強一下！` :
+                  `答對 ${total} 題，失誤 ${errors} 次，建議多複習！`;
+  document.getElementById("result").classList.add("show");
+}
+
+// ─── category buttons ─────────────────────────────────────
+const cats = ["全部混合", ...Object.keys(DATA)];
+const catsDiv = document.getElementById("cats");
+cats.forEach((cat, i) => {
+  const btn = document.createElement("button");
+  btn.className = "cat-btn" + (i === 0 ? " active" : "");
+  btn.textContent = cat;
+  btn.addEventListener("click", () => {
+    catsDiv.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    startGame(cat);
+  });
+  catsDiv.appendChild(btn);
+});
+
+document.getElementById("replayBtn").addEventListener("click", () => startGame(activeCat));
+
+// ─── init ─────────────────────────────────────────────────
+startGame("全部混合");
+</script>
+</body>
+</html>
