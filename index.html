@@ -270,6 +270,8 @@ const DATA = {
     { c: "胃 MALT，H. pylori 高度相關（根除可治癒）", a: "Gastric MALT Lymphoma" },
     { c: "Peripheral T-cell lymphoma 最常見（佔 NHL 5–10%）", a: "PTCL, NOS" },
     { c: "Variable age；Nodular sclerosis 最常見；bimodal age peak", a: "Classical Hodgkin Lymphoma" },
+    { c: "老年（mean age 70），cytopenia + hypercellular marrow + dysplasia", a: "MDS" },
+    { c: "成人，leukocytosis + splenomegaly + Philadelphia chromosome", a: "CML" },
   ],
   "好發位置": [
     { c: "皮膚 epidermis（epidermotropism），patch → plaque → tumor 順序進展", a: "MF / SS" },
@@ -289,6 +291,8 @@ const DATA = {
     { c: "Lymph node（保留 nodular 輪廓），多淋巴結，indolent", a: "Follicular Lymphoma" },
     { c: "Lymph node + 血液 + 脾臟 + 骨髓（全身），indolent", a: "CLL / SLL" },
     { c: "血液 + 骨髓 + 皮膚（leukemia cutis）+ 牙齦腫脹，成人", a: "AML" },
+    { c: "骨髓（hypercellular + dysplastic cells）；周邊血 cytopenia", a: "MDS" },
+    { c: "骨髓 + 周邊血（全系列 myeloid）+ 脾臟（splenomegaly）", a: "CML" },
   ],
   "病程": [
     { c: "Indolent + diffuse small cell + pseudofollicle（prolymphocyte 假 GC）", a: "CLL / SLL" },
@@ -304,6 +308,8 @@ const DATA = {
     { c: "Highly aggressive + 壞死潰爛 + 血管侵犯 + EBV＋（鼻腔）", a: "NK/T Lymphoma, nasal" },
     { c: "Variable + 多種免疫細胞背景，外觀極像 reactive hyperplasia（great mimicker）", a: "AITL" },
     { c: "Variable（最異質的 T-cell lymphoma），排除法診斷", a: "PTCL, NOS" },
+    { c: "Variable，可進展為 AML（blast 達 20% → 升格 AML with MDS-related changes）", a: "MDS" },
+    { c: "Chronic（平均 3 年）→ Accelerated（貧血 + 血小板減少）→ Blast crisis（6–12 月）", a: "CML" },
   ],
   "IHC / Marker": [
     { c: "CD5＋ / CD23＋ / CD20＋", a: "CLL / SLL" },
@@ -325,6 +331,9 @@ const DATA = {
     { c: "MPO＋（lineage marker）/ Auer rod / granules（成人）", a: "AML" },
     { c: "CD1a＋ / Langerin＋（nuclear grooves，Birbeck granules）", a: "LCH" },
     { c: "CD20＋ / BRAF V600E（hairy cells，spleen red pulp）", a: "Hairy Cell Leukemia" },
+    { c: "CD34＋ blast ↑ + hypercellular marrow + peripheral cytopenia（三系列 dysplasia）", a: "MDS" },
+    { c: "BCR-ABL PCR/FISH＋（Philadelphia chromosome）+ 全系列 myeloid 分化", a: "CML" },
+    { c: "JAK2 V617F mutation + RBC↑ + EPO↓（真性紅血球增多）", a: "Polycythemia vera" },
   ],
   "染色體 / 基因異常": [
     { c: "t(11;14) → Cyclin D1 overexpression（CD5＋ CD23－）", a: "Mantle Cell Lymphoma" },
@@ -342,6 +351,9 @@ const DATA = {
     { c: "EBV 感染 NK cell（診斷必要條件，無此不診斷）", a: "NK/T Lymphoma, nasal" },
     { c: "H. pylori 相關（根除後腫瘤可消退）", a: "Gastric MALT Lymphoma" },
     { c: "IGH rearrangement + NF-κB activation（B cell origin，但 CD20－）", a: "Classical Hodgkin Lymphoma" },
+    { c: "t(9;22) BCR-ABL1（Philadelphia chromosome，CML 診斷必要條件）", a: "CML" },
+    { c: "JAK2 V617F / CALR / MPL mutation（非費城染色體 MPN）", a: "MPN（PV／ET／PMF）" },
+    { c: "Clonal cytogenetic change + dysplasia + blast < 20%（老年，cytopenia）", a: "MDS" },
   ],
   "細胞形態 / 組織學": [
     { c: "Reed-Sternberg cell（owl's eye，雙核，50–100 µm）+ 大量發炎背景", a: "Classical Hodgkin Lymphoma" },
@@ -359,6 +371,8 @@ const DATA = {
     { c: "壞死潰爛腫塊，侵入血管（鼻腔 / upper aerodigestive tract）", a: "NK/T Lymphoma, nasal" },
     { c: "Small irregular cleaved cells（variants：blastoid 最惡，pleomorphic）", a: "Mantle Cell Lymphoma" },
     { c: "Diffuse large cells + variable morphology（最常見 aggressive B-cell）", a: "DLBCL" },
+    { c: "Dysplastic cells（核分葉異常、granule 異常、megakaryocyte 單核）+ hypercellular marrow", a: "MDS" },
+    { c: "周邊血全系列 myeloid（blast→promyelo→myelo→meta→band）+ splenomegaly", a: "CML" },
   ],
 };
 
